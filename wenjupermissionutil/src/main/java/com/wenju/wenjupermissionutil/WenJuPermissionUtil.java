@@ -1,16 +1,12 @@
 package com.wenju.wenjupermissionutil;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.os.Build;
-import android.os.Handler;
-import android.os.Looper;
-import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 
@@ -35,9 +31,7 @@ public class WenJuPermissionUtil {
     }
 
     public WenJuPermissionUtil requestPermisssion() {
-        if (checkDangerousPermissions(activity, permissions)) {
-            requestPermissions(activity, permissions, MY_PERMISSIONS_REQUEST_READ_CONTACTS);
-        }
+        checkDangerousPermissions(activity, permissions);
         return this;
     }
 
@@ -46,63 +40,36 @@ public class WenJuPermissionUtil {
      *
      * @param permissions 权限数组
      */
-    private Boolean checkDangerousPermissions(final @NonNull Activity activity, final @NonNull String[] permissions) {
+    private void checkDangerousPermissions(final @NonNull Activity activity, final @NonNull String[] permissions) {
         AlertDialog.Builder builder = null;
-        //遍历权限数组，看是否有权限未被允许
-        for (final String permission : permissions) {
-            //第一次进入，点击拒绝不再提醒或者允许之后为false，其他为true
-            boolean requestPermissionRationale = ActivityCompat.shouldShowRequestPermissionRationale(activity,
-                    permission);
-            if (ContextCompat.checkSelfPermission(activity, permission) != PackageManager.PERMISSION_GRANTED) {
-                if (requestPermissionRationale) {
-                    if (markedWords != null && builder == null) {
-                        builder = new AlertDialog.Builder(activity);
-                        builder.setMessage(markedWords)
-                                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int id) {
-                                        requestPermissions(activity, permissions, MY_PERMISSIONS_REQUEST_READ_CONTACTS);
-                                    }
-                                })
-                                .setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int id) {
-
-                                    }
-                                });
-                        builder.show();
+        //首次进入权限申请
+        SharedPreferences mFirstRequest = activity.getSharedPreferences("mFirstRequest",Context.MODE_PRIVATE);
+        if(0 == mFirstRequest.getInt("mFirstRequest",0)){
+            ActivityCompat.requestPermissions(activity, permissions, MY_PERMISSIONS_REQUEST_READ_CONTACTS);
+            SharedPreferences.Editor edit = mFirstRequest.edit();
+            edit.putInt("mFirstRequest",1);
+            edit.apply();
+        }else {
+            //遍历权限数组
+            for (final String permission : permissions) {
+                //checkSelfPermission方法查看权限是否被允许，-1不允许，0允许
+                if (ContextCompat.checkSelfPermission(activity, permission) != PackageManager.PERMISSION_GRANTED) {
+                   //首次请求，被允许或者拒绝并且不再提醒的权限shouldShowRequestPermissionRationale方法返回false，其他为true
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(activity,
+                            permission)) {
+                        if (markedWords != null && builder == null) {
+                            builder = new AlertDialog.Builder(activity);
+                            builder.setMessage(markedWords)
+                                    .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int id) {
+                                            ActivityCompat.requestPermissions(activity, permissions, MY_PERMISSIONS_REQUEST_READ_CONTACTS);
+                                        }
+                                    });
+                            builder.show();
+                        }
                     }
-                } else {
-                    return true;
                 }
             }
         }
-        return false;
     }
-
-    @SuppressLint("RestrictedApi")
-    private static void requestPermissions(final @NonNull Activity activity, final @NonNull String[] permissions, final @IntRange(from = 0) int requestCode) {
-        if (Build.VERSION.SDK_INT >= 23) {
-            if (activity instanceof ActivityCompat.RequestPermissionsRequestCodeValidator) {
-                ((ActivityCompat.RequestPermissionsRequestCodeValidator) activity).validateRequestPermissionsRequestCode(requestCode);
-            }
-            activity.requestPermissions(permissions, requestCode);
-        } else if (activity instanceof ActivityCompat.OnRequestPermissionsResultCallback) {
-            Handler handler = new Handler(Looper.getMainLooper());
-            handler.post(new Runnable() {
-                @RequiresApi(api = Build.VERSION_CODES.M)
-                @Override
-                public void run() {
-                    final int[] grantResults = new int[permissions.length];
-                    PackageManager packageManager = activity.getPackageManager();
-                    String packageName = activity.getPackageName();
-                    final int permissionCount = permissions.length;
-                    for (int i = 0; i < permissionCount; i++) {
-                        grantResults[i] = packageManager.checkPermission(permissions[i], packageName);
-                    }
-                    (activity).onRequestPermissionsResult(requestCode, permissions, grantResults);
-                }
-            });
-        }
-    }
-
-
 }

@@ -12,7 +12,8 @@ public class PermissionToRequestDemo extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_permission_to_request_demo);
-        String[] permissions = new String[]{Manifest.permission.READ_CONTACTS, Manifest.permission.SEND_SMS};
+        String[] permissions = new String[]{Manifest.permission.SEND_SMS, Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.CALL_PHONE};
         new WenJuPermissionUtil(this, permissions)
                 .setDialogTitle("建议开启所有权限,否者某些功能将无法使用")
                 .requestPermisssion();
