@@ -37,7 +37,6 @@ public class WenJuPermissionUtil {
 
     /**
      * 核对权限是否被允许
-     *
      * @param permissions 权限数组
      */
     private void checkDangerousPermissions(final @NonNull Activity activity, final @NonNull String[] permissions) {
@@ -54,7 +53,7 @@ public class WenJuPermissionUtil {
             for (final String permission : permissions) {
                 //checkSelfPermission方法查看权限是否被允许，-1不允许，0允许
                 if (ContextCompat.checkSelfPermission(activity, permission) != PackageManager.PERMISSION_GRANTED) {
-                   //首次请求，被允许或者拒绝并且不再提醒的权限shouldShowRequestPermissionRationale方法返回false，其他为true
+//                   首次请求，被允许或者拒绝并且不再提醒的权限shouldShowRequestPermissionRationale方法返回false，其他为true
                     if (ActivityCompat.shouldShowRequestPermissionRationale(activity,
                             permission)) {
                         if (markedWords != null && builder == null) {

@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">WJPermissionUtil</string>
+    <string name="request_permission_btn">Request Permission</string>
 </resources>
