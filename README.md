@@ -14,7 +14,7 @@ allprojects {
 * ###### 2.添加项目依赖： 
 ```
 dependencies {
-	        implementation 'com.github.GhostWenju:WJPermissionUtil:v1.0.0'
+	        implementation 'com.github.GhostWenju:WJPermissionUtil:v2.0.0'
 	}
 ```
 * ###### 3.两行代码请求权限： 
